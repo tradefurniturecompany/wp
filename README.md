@@ -1,1 +1,1 @@
-[tradefurniturecompany.co.uk/wp](https://www.tradefurniturecompany.co.uk/wp) (WordPress).
+[tradefurniturecompany.co.uk/blog](https://www.tradefurniturecompany.co.uk/blog) (WordPress).
