@@ -1,0 +1,10 @@
+# 2020-03-23 Dmitry Fedyuk https://www.upwork.com/fl/mage2pro
+# http://stackoverflow.com/questions/987142
+# http://stackoverflow.com/questions/9162919
+# http://stackoverflow.com/questions/8024924#comment15884195_8025106
+wp-config.php
+wp-content/updraft
+!wp-content/updraft/.htaccess
+!wp-content/updraft/index.html
+!wp-content/updraft/web.config
+wp-content/uploads
