@@ -1,6 +1,6 @@
 <?php
 /**
- * Template Name: Full Width (1 Column)
+ * Template Name: Empty
  * Template Post Type: post, page
  */
 
