@@ -40,7 +40,7 @@ class FishPig_Theme
 	   	add_action('save_post',                  array($this, 'preRenderPostContent'));
 		add_action('admin_menu',                 array($this, 'onAdminMenu'));
 		add_filter('vc_front_render_shortcodes', array($this, 'onVcFrontRenderShortcodes'), 99999);
-		
+		add_filter('wp_calculate_image_srcset',  array($this, 'onWpCalculateImageSrcset'));
 		if ($this->isMagento2()) {
 			add_action('save_post', array($this, 'invalidateMagento2FPC'));
 			
@@ -282,7 +282,7 @@ class FishPig_Theme
 	
 		$nonce = substr( hash_hmac( 'sha256', $nonce_tick . '|fishpig|' . $action, $salt ), -12, 10 );
 	
-		wp_remote_get( home_url( '/wordpress/post/invalidate?id=' . $post_id . '&nonce=' . $nonce ) );
+		wp_remote_get(home_url('/wordpress/post/invalidate?id=' . $post_id . '&nonce=' . $nonce . '&time' . time()));
 	}
 
 	/*
@@ -435,6 +435,14 @@ class FishPig_Theme
         }
 	}
 
+    /**
+     *
+     */
+    public function onWpCalculateImageSrcset($sources)
+    {
+        return false;
+    }
+    
 	/*
 	 *
 	 *
