@@ -1,5 +1,5 @@
 <?php
-defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
+defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 ?>
 <div id="imagify-pricing-modal" class="imagify-modal imagify-payment-modal hide-if-no-js" aria-hidden="false" role="dialog">
 	<div class="imagify-modal-content">
@@ -15,8 +15,8 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 
 				<div class="imagify-modal-section section-gray imagify-estimation-block imagify-analyzing">
 					<p class="imagify-modal-title">
-						<span class="imagify-numbers-calc"><?php esc_html_e( 'We analysed your images', 'imagify' ); ?></span>
-						<span class="imagify-numbers-notcalc"><?php esc_html_e( 'We are analysing your images', 'imagify' ); ?></span>
+						<span class="imagify-numbers-calc"><?php esc_html_e( 'We analyzed your images', 'imagify' ); ?></span>
+						<span class="imagify-numbers-notcalc"><?php esc_html_e( 'We are analyzing your images', 'imagify' ); ?></span>
 					</p>
 
 					<img src="<?php echo IMAGIFY_ASSETS_IMG_URL; ?>loader-balls.svg" width="77" height="48" alt="<?php esc_attr_e( 'Analyzing', 'imagify' ); ?>" class="imagify-loader">
@@ -66,23 +66,23 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 
 				<div class="imagify-modal-section imagify-pre-checkout-offers">
 					<p class="imagify-modal-title">
-						<span class="imagify-not-enough-title"><?php esc_html_e( 'We recommend you this plan', 'imagify' ); ?></span>
+						<span class="imagify-not-enough-title"><?php esc_html_e( 'Our recommendation for you', 'imagify' ); ?></span>
 						<span class="imagify-enough-title"><?php esc_html_e( 'The free plan is enough to optimize your images', 'imagify' ); ?></span>
-
+						<br/><span class="imagify-inner-sub-title"><?php esc_html_e( 'Based on your recent upload usage.', 'imagify' ); ?></span>
 					</p>
 
 					<div class="imagify-offer-line imagify-offer-monthly imagify-offer-selected imagify-month-selected" data-offer='{"lite":{"id":3,"name":"Lite","data":1073741824,"dataf":"1 GB","imgs":5000,"prices":{"monthly":4.99,"yearly":4.16,"add":4}}}'>
 						<div class="imagify-offer-header">
 							<p class="imagify-offer-title imagify-switch-my">
-								<span aria-hidden="false" class="imagify-monthly"><?php esc_html_e( 'Subscribe a monthly plan', 'imagify' ); ?></span>
-								<span aria-hidden="true" class="imagify-yearly"><?php esc_html_e( 'Subscribe a yearly plan', 'imagify' ); ?></span>
+								<span aria-hidden="false" class="imagify-monthly"><?php esc_html_e( 'Subscribe to a monthly plan', 'imagify' ); ?></span>
+								<span aria-hidden="true" class="imagify-yearly"><?php esc_html_e( 'Subscribe to a yearly plan', 'imagify' ); ?></span>
 							</p>
 							<div class="imagify-inline-options imagify-radio-line">
 								<input id="imagify-subscription-monthly" type="radio" value="monthly" name="plan-subscription" checked="checked">
-								<label for="imagify-subscription-monthly"><?php esc_html_e( 'Monthly' , 'imagify' ); ?></label>
+								<label for="imagify-subscription-monthly"><?php esc_html_e( 'Monthly', 'imagify' ); ?></label>
 
 								<input id="imagify-subscription-yearly" type="radio" value="yearly" name="plan-subscription">
-								<label for="imagify-subscription-yearly"><?php esc_html_e( 'Yearly' , 'imagify' ); ?><span class="imagify-2-free"><?php esc_html_e( '2 months free', 'imagify' ); ?></span></label>
+								<label for="imagify-subscription-yearly"><?php esc_html_e( 'Yearly', 'imagify' ); ?><span class="imagify-2-free"><?php esc_html_e( '2 months free', 'imagify' ); ?></span></label>
 							</div><!-- .imagify-radio-line -->
 						</div><!-- .imagify-offer-header -->
 
@@ -128,7 +128,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 									<?php
 									printf(
 										/* translators: %s is a formatted price. */
-										__( '%s per<br>additionnal Gb', 'imagify' ),
+										__( '%s per<br>additional Gb', 'imagify' ),
 										'<span class="imagify-price-add-data"></span>'
 									);
 									?>
@@ -146,7 +146,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 					<div class="imagify-offer-line imagify-offer-onetime" data-offer='{"recommended":{"id":999,"name":"Customized","data":3000001337,"dataf":"3 GB","imgs":54634,"price":28.98}}'>
 						<div class="imagify-offer-header">
 							<p class="imagify-offer-title">
-								<?php esc_html_e( 'Optimize the images you already have, buy a One Time plan', 'imagify' ); ?>
+								<?php esc_html_e( 'Optimize the images you already have with a One Time plan', 'imagify' ); ?>
 							</p>
 						</div><!-- .imagify-offer-header -->
 
@@ -193,7 +193,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 
 								<img src="<?php echo IMAGIFY_ASSETS_IMG_URL; ?>loader-balls.svg" width="60" height="36" alt="<?php esc_attr_e( 'Checking Coupon', 'imagify' ); ?>" class="imagify-coupon-loader">
 
-								<label for="imagify-coupon-code"><?php _e( 'If you have a <strong>coupon code</strong><br> use it there:', 'imagify' ); ?></label>
+								<label for="imagify-coupon-code"><?php _e( 'If you have a <strong>coupon code</strong><br> use it here:', 'imagify' ); ?></label>
 							</p>
 							<p class="imagify-coupon-input">
 								<input type="text" class="imagify-coupon-code" name="imagify-coupon-code" id="imagify-coupon-code" value="" placeholder="<?php _e( 'Coupon Code', 'imagify' ); ?>" autocomplete="off">
@@ -208,7 +208,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 						</div>
 					</div>
 
-					<p class="imagify-footer-lines"><?php esc_html_e( 'Monthly plans come with credits which is renewed every months. The billing happens automatically each month or year depending the billing period you choose.', 'imagify' ); ?></p>
+					<p class="imagify-footer-lines"><?php esc_html_e( 'Monthly plans come with credits which are renewed every month. The billing happens automatically each month or year, depending on which billing period you choose.', 'imagify' ); ?></p>
 				</div>
 			</div><!-- .imagify-pre-checkout-view -->
 
@@ -245,16 +245,16 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 
 						<div class="imagify-inline-options imagify-small-options imagify-radio-line">
 							<input id="imagify-pricing-montly" type="radio" value="monthly" name="plan-pricing" checked="checked">
-							<label for="imagify-pricing-montly"><?php esc_html_e( 'Monthly' , 'imagify' ); ?></label>
+							<label for="imagify-pricing-montly"><?php esc_html_e( 'Monthly', 'imagify' ); ?></label>
 
 							<input id="imagify-pricing-yearly" type="radio" value="yearly" name="plan-pricing">
-							<label for="imagify-pricing-yearly"><?php esc_html_e( 'Yearly' , 'imagify' ); ?><span class="imagify-2-free imagify-b-right"><?php esc_html_e( '2 months free', 'imagify' ); ?></span></label>
+							<label for="imagify-pricing-yearly"><?php esc_html_e( 'Yearly', 'imagify' ); ?><span class="imagify-2-free imagify-b-right"><?php esc_html_e( '2 months free', 'imagify' ); ?></span></label>
 						</div><!-- .imagify-radio-line -->
 
 
 						<div class="imagify-pricing-table imagify-month-selected">
 
-						<script type="text/template" id="imagify-offer-monthly-template"><div class="imagify-offer-line imagify-offer-monthlies imagify-flex-table">
+						<script type="text/html" id="imagify-offer-monthly-template"><div class="imagify-offer-line imagify-offer-monthlies imagify-flex-table">
 								<div class="imagify-col-details">
 									<p class="imagify-label">
 										<span class="imagify-the-offer">
@@ -320,7 +320,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 						</div>
 
 						<div class="imagify-pricing-table imagify-month-selected">
-						<script type="text/template" id="imagify-offer-onetime-template"><div class="imagify-offer-line imagify-flex-table imagify-offer-onetimes">
+						<script type="text/html" id="imagify-offer-onetime-template"><div class="imagify-offer-line imagify-flex-table imagify-offer-onetimes">
 								<div class="imagify-col-details">
 									<p class="imagify-label">
 										<span class="imagify-the-offer">
@@ -389,7 +389,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 
 		<div class="imagify-modal-sidebar">
 			<div class="imagify-modal-sidebar-content imagify-txt-start">
-				<p class="imagify-modal-sidebar-title"><?php esc_html_e( 'What do our user think about Imagify', 'imagify' ); ?></p>
+				<p class="imagify-modal-sidebar-title"><?php esc_html_e( 'What do our users think about Imagify', 'imagify' ); ?></p>
 
 				<div class="imagify-modal-testimony">
 					<div class="imagify-modal-testimony-person">
@@ -397,8 +397,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 							<img src="<?php echo IMAGIFY_ASSETS_IMG_URL; ?>pic-srhdesign.jpg" alt="">
 						</span>
 						<p class="imagify-modal-identity">
-							<a href="https://twitter.com/SRHDesign" target="_blank">@SRHDesign</a>
-							<a href="https://twitter.com/SRHDesign/status/686486119249260544" target="_blank"><time datetime="2016-01-11">11 jan. 2016 @ 17:40</time></a>
+							<a href="https://twitter.com/SRHDesign/status/686486119249260544" target="_blank">@SRHDesign</a>
 						</p>
 					</div>
 					<div class="imagify-modal-testimony-content">
@@ -412,8 +411,7 @@ defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
 							<img src="<?php echo IMAGIFY_ASSETS_IMG_URL; ?>pic-ericwaltr.jpg" alt="">
 						</span>
 						<p class="imagify-modal-identity">
-							<a href="https://twitter.com/EricWaltr" target="_blank">@EricWaltr</a>
-							<a href="https://twitter.com/EricWaltR/status/679053496382038016" target="_blank"><time datetime="2016-01-11">21 dec. 2015 @ 22:39</time></a>
+							<a href="https://twitter.com/EricWaltR/status/679053496382038016" target="_blank">@EricWaltr</a>
 						</p>
 					</div>
 					<div class="imagify-modal-testimony-content">

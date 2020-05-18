@@ -1,5 +1,7 @@
 <?php
 /**
+ * WPSEO plugin file.
+ *
  * @package WPSEO\Admin
  */
 
@@ -8,56 +10,147 @@
  */
 class WPSEO_Admin_Asset {
 
+	/**
+	 * Constant used to identify file type as a JS file.
+	 *
+	 * @var string
+	 */
 	const TYPE_JS = 'js';
+
+	/**
+	 * Constant used to identify file type as a CSS file.
+	 *
+	 * @var string
+	 */
 	const TYPE_CSS = 'css';
 
+	/**
+	 * The name option identifier.
+	 *
+	 * @var string
+	 */
 	const NAME = 'name';
+
+	/**
+	 * The source option identifier.
+	 *
+	 * @var string
+	 */
 	const SRC = 'src';
+
+	/**
+	 * The dependencies option identifier.
+	 *
+	 * @var string
+	 */
 	const DEPS = 'deps';
+
+	/**
+	 * The version option identifier.
+	 *
+	 * @var string
+	 */
 	const VERSION = 'version';
 
-	// Style specific.
+	/* Style specific. */
+
+	/**
+	 * The media option identifier.
+	 *
+	 * @var string
+	 */
 	const MEDIA = 'media';
 
-	// Script specific.
+	/**
+	 * The rtl option identifier.
+	 *
+	 * @var string
+	 */
+	const RTL = 'rtl';
+
+	/* Script specific. */
+
+	/**
+	 * The "in footer" option identifier.
+	 *
+	 * @var string
+	 */
 	const IN_FOOTER = 'in_footer';
 
 	/**
+	 * Asset identifier.
+	 *
 	 * @var string
 	 */
 	protected $name;
 
 	/**
+	 * Path to the asset.
+	 *
 	 * @var string
 	 */
 	protected $src;
 
 	/**
+	 * Asset dependencies.
+	 *
 	 * @var string|array
 	 */
 	protected $deps;
 
 	/**
+	 * Asset version.
+	 *
 	 * @var string
 	 */
 	protected $version;
 
 	/**
+	 * For CSS Assets. The type of media for which this stylesheet has been defined.
+	 *
+	 * See https://www.w3.org/TR/CSS2/media.html#media-types.
+	 *
 	 * @var string
 	 */
 	protected $media;
 
 	/**
-	 * @var boolean
+	 * For JS Assets. Whether or not the script should be loaded in the footer.
+	 *
+	 * @var bool
 	 */
 	protected $in_footer;
 
 	/**
+	 * For CSS Assets. Whether this stylesheet is a right-to-left stylesheet.
+	 *
+	 * @var bool
+	 */
+	protected $rtl;
+
+	/**
+	 * File suffix.
+	 *
 	 * @var string
 	 */
 	protected $suffix;
 
 	/**
+	 * Default asset arguments.
+	 *
+	 * @var array
+	 */
+	private $defaults = [
+		'deps'      => [],
+		'version'   => WPSEO_VERSION,
+		'in_footer' => true,
+		'rtl'       => true,
+		'media'     => 'all',
+	];
+
+	/**
+	 * Constructs an instance of the WPSEO_Admin_Asset class.
+	 *
 	 * @param array $args The arguments for this asset.
 	 *
 	 * @throws InvalidArgumentException Throws when no name or src has been provided.
@@ -71,13 +164,7 @@ class WPSEO_Admin_Asset {
 			throw new InvalidArgumentException( 'src is a required argument' );
 		}
 
-		$args = array_merge( array(
-			'deps'      => array(),
-			'version'   => WPSEO_VERSION,
-			'in_footer' => true,
-			'media'     => 'all',
-			'suffix'    => WPSEO_CSSJS_SUFFIX,
-		), $args );
+		$args = array_merge( $this->defaults, $args );
 
 		$this->name      = $args['name'];
 		$this->src       = $args['src'];
@@ -85,10 +172,13 @@ class WPSEO_Admin_Asset {
 		$this->version   = $args['version'];
 		$this->media     = $args['media'];
 		$this->in_footer = $args['in_footer'];
-		$this->suffix    = $args['suffix'];
+		$this->rtl       = $args['rtl'];
+		$this->suffix    = isset( $args['suffix'] ) ? $args['suffix'] : '';
 	}
 
 	/**
+	 * Returns the asset identifier.
+	 *
 	 * @return string
 	 */
 	public function get_name() {
@@ -96,6 +186,8 @@ class WPSEO_Admin_Asset {
 	}
 
 	/**
+	 * Returns the path to the asset.
+	 *
 	 * @return string
 	 */
 	public function get_src() {
@@ -103,6 +195,8 @@ class WPSEO_Admin_Asset {
 	}
 
 	/**
+	 * Returns the asset dependencies.
+	 *
 	 * @return array|string
 	 */
 	public function get_deps() {
@@ -110,6 +204,8 @@ class WPSEO_Admin_Asset {
 	}
 
 	/**
+	 * Returns the asset version.
+	 *
 	 * @return string
 	 */
 	public function get_version() {
@@ -117,6 +213,8 @@ class WPSEO_Admin_Asset {
 	}
 
 	/**
+	 * Returns the media type for CSS assets.
+	 *
 	 * @return string
 	 */
 	public function get_media() {
@@ -124,6 +222,8 @@ class WPSEO_Admin_Asset {
 	}
 
 	/**
+	 * Returns whether a script asset should be loaded in the footer of the page.
+	 *
 	 * @return boolean
 	 */
 	public function is_in_footer() {
@@ -131,6 +231,17 @@ class WPSEO_Admin_Asset {
 	}
 
 	/**
+	 * Returns whether this CSS has a RTL counterpart.
+	 *
+	 * @return boolean
+	 */
+	public function has_rtl() {
+		return $this->rtl;
+	}
+
+	/**
+	 * Returns the file suffix.
+	 *
 	 * @return string
 	 */
 	public function get_suffix() {
@@ -140,65 +251,19 @@ class WPSEO_Admin_Asset {
 	/**
 	 * Returns the full URL for this asset based on the path to the plugin file.
 	 *
+	 * @deprecated 6.2
+	 * @codeCoverageIgnore
+	 *
 	 * @param string $type        Type of asset.
 	 * @param string $plugin_file Absolute path to the plugin file.
 	 *
 	 * @return string The full URL to the asset.
 	 */
 	public function get_url( $type, $plugin_file ) {
+		_deprecated_function( __CLASS__ . '::get_url', '6.2', 'WPSEO_Admin_Asset_SEO_Location::get_url' );
 
-		$relative_path = $this->get_relative_path( $type );
-		if ( empty( $relative_path ) ) {
-			return '';
-		}
+		$asset_location = new WPSEO_Admin_Asset_SEO_Location( $plugin_file );
 
-		if ( ! $this->get_suffix() ) {
-
-			$plugin_path = plugin_dir_path( $plugin_file );
-			if ( ! file_exists( $plugin_path . $relative_path ) ) {
-
-				// Give a notice to the user in the console (only once).
-				WPSEO_Utils::javascript_console_notification(
-					'Development Files',
-					sprintf(
-						/* translators: %1$s resolves to https://github.com/Yoast/wordpress-seo */
-						__( 'You are trying to load non-minified files, these are only available in our development package. Check out %1$s to see all the source files.', 'wordpress-seo' ),
-						'https://github.com/Yoast/wordpress-seo'
-					),
-					true
-				);
-
-				// Just load the .min file.
-				$relative_path = $this->get_relative_path( $type, '.min' );
-			}
-		}
-
-		return plugins_url( $relative_path, $plugin_file );
-	}
-
-	/**
-	 * Get the relative file for this asset
-	 *
-	 * @param string $type         Type of this asset.
-	 * @param null   $force_suffix Force use suffix.
-	 *
-	 * @return string
-	 */
-	protected function get_relative_path( $type, $force_suffix = null ) {
-		$relative_path = '';
-
-		$suffix = ( is_null( $force_suffix ) ) ? $this->get_suffix() : $force_suffix;
-
-		switch ( $type ) {
-			case self::TYPE_JS:
-				$relative_path = 'js/dist/' . $this->get_src() . $suffix . '.js';
-				break;
-
-			case self::TYPE_CSS:
-				$relative_path = 'css/' . $this->get_src() . $suffix . '.css';
-				break;
-		}
-
-		return $relative_path;
+		return $asset_location->get_url( $this, $type );
 	}
 }

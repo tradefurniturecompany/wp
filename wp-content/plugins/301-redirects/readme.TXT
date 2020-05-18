@@ -1,17 +1,32 @@
 === 301 Redirects ===
-Contributors: tonyspiro
-Tags: 301 redirects, redirects, redirect, pages, bootstrap, redirect old site links, redirect new site links, manage redirects
-Tested up to: 4.5.3
+Contributors: WebFactory, wpreset, googlemapswidget, underconstructionpage
+Tags: 301 redirect, redirects, redirect url, redirect, redirection, seo, 302 redirect, 404, 404 redirect, 301
+Requires at least: 4.0
+Tested up to: 5.3
+Stable tag: 0.4
+Requires PHP: 5.2
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This plugin helps you add 301 Redirects to your Wordpress site.
-
+Quickly create & manage 301 redirects. Simple to use & validate redirects.
 
 == Description ==
-This plugin is perfect for when you are creating a new site from an old site and need to manage all of the redirects from the old site to the new one.  
+A perfect plugin for **creating a new site from an old site** or changing the domain name and managing all of the redirects and broken URLs.  
 
-Find the link to the installed 301 Redirects in the Settings tab in the admin menu.
+Find the link to 301 Redirects in the main Settings menu.
 
-It will set up a new table in your wordpress install called 'ts_redirects' that will store all of your redirect information.
+Redirect plugin creates a new table in the WP database called 'ts_redirects' that stores all of your redirect information.
 
 == Screenshots ==
-1. Add your section, title, old links, new links.
+1. Just add title, section, old link & new link.
+
+== Changelog ==
+
+= v0.4 =
+* 2019/06/20
+* 10,000 installations; 40,940 downloads
+* bug fixes
+
+= v0.1 =
+* 2015/04/06
+* first release

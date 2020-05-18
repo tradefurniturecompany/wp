@@ -1,5 +1,5 @@
 <?php
-defined( 'ABSPATH' ) || die( 'Cheatin\' uh?' );
+defined( 'ABSPATH' ) || die( 'Cheatin’ uh?' );
 
 require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
 require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
@@ -215,25 +215,33 @@ class Imagify_Filesystem extends WP_Filesystem_Direct {
 			return false;
 		}
 
-		$bits = str_replace( $site_root, '', $path );
-		$bits = explode( '/', $bits );
+		$bits = preg_replace( '@^' . preg_quote( $site_root, '@' ) . '@i', '', $path );
+		$bits = explode( '/', trim( $bits, '/' ) );
 		$path = untrailingslashit( $site_root );
 
 		foreach ( $bits as $bit ) {
-			$path .= '/' . $bit;
+			$parent_path = $path;
+			$path       .= '/' . $bit;
 
-			if ( ! $this->exists( $path ) ) {
-				$this->mkdir( $path );
-			} elseif ( ! $this->is_dir( $path ) ) {
-				return false;
-			}
-
-			if ( ! $this->is_writable( $path ) ) {
-				$this->chmod_dir( $path );
-
-				if ( ! $this->is_writable( $path ) ) {
+			if ( $this->exists( $path ) ) {
+				if ( ! $this->is_dir( $path ) ) {
 					return false;
 				}
+				continue;
+			}
+
+			if ( ! $this->is_writable( $parent_path ) ) {
+				$this->chmod_dir( $parent_path );
+
+				if ( ! $this->is_writable( $parent_path ) ) {
+					return false;
+				}
+			}
+
+			$this->mkdir( $path );
+
+			if ( ! $this->exists( $path ) ) {
+				return false;
 			}
 		}
 
@@ -586,6 +594,50 @@ class Imagify_Filesystem extends WP_Filesystem_Direct {
 		return is_array( $exif ) ? $exif : array();
 	}
 
+	/**
+	 * Tell if a file is an animated gif.
+	 *
+	 * @since  1.9.5
+	 * @access public
+	 * @source https://www.php.net/manual/en/function.imagecreatefromgif.php#104473
+	 * @author Grégory Viguier
+	 *
+	 * @param  string $file_path Path to the file.
+	 * @return bool|null         Null if the file cannot be read.
+	 */
+	public function is_animated_gif( $file_path ) {
+		if ( $this->path_info( $file_path, 'extension' ) !== 'gif' ) {
+			// Not a gif file.
+			return false;
+		}
+
+		$fh = @fopen( $file_path, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+
+		if ( ! $fh ) {
+			// Could not open the file.
+			return null;
+		}
+
+		/**
+		 * An animated gif contains multiple "frames", with each frame having a header made up of:
+		 * - a static 4-byte sequence (\x00\x21\xF9\x04),
+		 * - 4 variable bytes,
+		 * - a static 2-byte sequence (\x00\x2C) (some variants may use \x00\x21 ?).
+		 */
+		$count = 0;
+
+		// We read through the file til we reach the end of the file, or we've found at least 2 frame headers.
+		while ( ! feof( $fh ) && $count < 2 ) {
+			// Read 100kb at a time.
+			$chunk  = fread( $fh, 1024 * 100 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fread
+			$count += preg_match_all( '#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches );
+		}
+
+		fclose( $fh ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+
+		return $count > 1;
+	}
+
 
 	/** ----------------------------------------------------------------------------------------- */
 	/** WORK WITH PATHS ========================================================================= */
@@ -751,6 +803,8 @@ class Imagify_Filesystem extends WP_Filesystem_Direct {
 		$root_path = apply_filters( 'imagify_site_root', null );
 
 		if ( is_string( $root_path ) ) {
+			$root_path = trailingslashit( wp_normalize_path( $root_path ) );
+
 			return $root_path;
 		}
 
@@ -761,26 +815,26 @@ class Imagify_Filesystem extends WP_Filesystem_Direct {
 			$wp_path_rel_to_home = str_ireplace( $home, '', $siteurl ); /* $siteurl - $home */
 			$pos                 = strripos( str_replace( '\\', '/', ABSPATH ), trailingslashit( $wp_path_rel_to_home ) );
 			$root_path           = substr( ABSPATH, 0, $pos );
-			$root_path           = trailingslashit( str_replace( '\\', '/', $root_path ) );
+			$root_path           = trailingslashit( wp_normalize_path( $root_path ) );
 			return $root_path;
 		}
 
 		if ( ! defined( 'PATH_CURRENT_SITE' ) || ! is_multisite() || is_main_site() ) {
-			$root_path = str_replace( '\\', '/', ABSPATH );
+			$root_path = $this->get_abspath();
 			return $root_path;
 		}
 
-		// For a multisite in its own directory, get_home_path() returns the expected path only for the main site.
-		$script_filename   = str_replace( '\\', '/', wp_unslash( $_SERVER['SCRIPT_FILENAME'] ) );
-		$path_current_site = trailingslashit( '/' . trim( str_replace( '\\', '/', PATH_CURRENT_SITE ), '/' ) );
-		$pos               = strripos( $script_filename, $path_current_site );
+		/**
+		 * For a multisite in its own directory, get_home_path() returns the expected path only for the main site.
+		 *
+		 * Friend, each time an attempt is made to improve this method, and especially this part, please increment the following counter.
+		 * Improvement attempts: 3.
+		 */
+		$document_root     = realpath( wp_unslash( $_SERVER['DOCUMENT_ROOT'] ) ); // `realpath()` is needed for those cases where $_SERVER['DOCUMENT_ROOT'] is totally different from ABSPATH.
+		$document_root     = trailingslashit( str_replace( '\\', '/', $document_root ) );
+		$path_current_site = trim( str_replace( '\\', '/', PATH_CURRENT_SITE ), '/' );
+		$root_path         = trailingslashit( wp_normalize_path( $document_root . $path_current_site ) );
 
-		if ( false === $pos ) {
-			$root_path = str_replace( '\\', '/', ABSPATH );
-			return $root_path;
-		}
-
-		$root_path = substr( $script_filename, 0, $pos ) . $path_current_site;
 		return $root_path;
 	}
 

@@ -16,8 +16,9 @@ function _imagify_upgrader() {
 	// Version stored at the site level.
 	$site_version    = Imagify_Data::get_instance()->get( 'version' );
 
-	// First install (network).
 	if ( ! $network_version ) {
+		// First install (network).
+
 		/**
 		 * Triggered on Imagify first install (network).
 		 *
@@ -25,9 +26,9 @@ function _imagify_upgrader() {
 		 * @author Grégory Viguier
 		 */
 		do_action( 'imagify_first_network_install' );
-	}
-	// Already installed but got updated (network).
-	elseif ( IMAGIFY_VERSION !== $network_version ) {
+	} elseif ( IMAGIFY_VERSION !== $network_version ) {
+		// Already installed but got updated (network).
+
 		/**
 		 * Triggered on Imagify upgrade (network).
 		 *
@@ -45,17 +46,18 @@ function _imagify_upgrader() {
 		Imagify_Options::get_instance()->set( 'version', IMAGIFY_VERSION );
 	}
 
-	// First install (site level).
 	if ( ! $site_version ) {
+		// First install (site level).
+
 		/**
 		 * Triggered on Imagify first install (site level).
 		 *
 		 * @since 1.0
 		 */
 		do_action( 'imagify_first_install' );
-	}
-	// Already installed but got updated (site level).
-	elseif ( IMAGIFY_VERSION !== $site_version ) {
+	} elseif ( IMAGIFY_VERSION !== $site_version ) {
+		// Already installed but got updated (site level).
+
 		/**
 		 * Triggered on Imagify upgrade (site level).
 		 *
@@ -202,9 +204,10 @@ function _imagify_new_upgrade( $network_version, $site_version ) {
 
 		if ( $query->posts ) {
 			foreach ( (array) $query->posts as $id ) {
-				$attachment_error = get_imagify_attachment( 'wp', $id, 'imagify_upgrade' )->get_optimized_error();
+				$data  = get_post_meta( $id, '_imagify_data', true );
+				$error = ! empty( $data['sizes']['full']['error'] ) ? $data['sizes']['full']['error'] : '';
 
-				if ( false !== strpos( $attachment_error, 'This image is already compressed' ) ) {
+				if ( false !== strpos( $error, 'This image is already compressed' ) ) {
 					update_post_meta( $id, '_imagify_status', 'already_optimized' );
 				}
 			}
@@ -241,10 +244,11 @@ function _imagify_new_upgrade( $network_version, $site_version ) {
 
 		if ( $query->posts ) {
 			foreach ( (array) $query->posts as $id ) {
-				$attachment_stats = get_imagify_attachment( 'wp', $id, 'imagify_upgrade' )->get_stats_data();
+				$data  = get_post_meta( $id, '_imagify_data', true );
+				$stats = isset( $data['stats'] ) ? $data['stats'] : [];
 
-				if ( isset( $attachment_stats['aggressive'] ) ) {
-					update_post_meta( $id, '_imagify_optimization_level', (int) $attachment_stats['aggressive'] );
+				if ( isset( $stats['aggressive'] ) ) {
+					update_post_meta( $id, '_imagify_optimization_level', (int) $stats['aggressive'] );
 				}
 			}
 		}
@@ -277,13 +281,23 @@ function _imagify_new_upgrade( $network_version, $site_version ) {
 		$replacement = '{{ROOT}}/';
 
 		if ( $filesystem->has_wp_its_own_directory() ) {
-			$replacement .= str_replace( $filesystem->get_site_root(), '', $filesystem->get_abspath() );
+			$replacement .= preg_replace( '@^' . preg_quote( $filesystem->get_site_root(), '@' ) . '@', '', $filesystem->get_abspath() );
 		}
 
 		$replacement = Imagify_DB::esc_like( $replacement );
 
 		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->base_prefix}imagify_files SET path = REPLACE( path, '{{ABSPATH}}/', %s ) WHERE path LIKE %s", $replacement, '{{ABSPATH}}/%' ) );
 		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->base_prefix}imagify_folders SET path = REPLACE( path, '{{ABSPATH}}/', %s ) WHERE path LIKE %s", $replacement, '{{ABSPATH}}/%' ) );
+	}
+
+	// 1.8.2
+	if ( version_compare( $site_version, '1.8.2' ) < 0 ) {
+		Imagify_Options::get_instance()->set( 'partner_links', 1 );
+	}
+
+	// 1.9.6
+	if ( version_compare( $site_version, '1.9.6' ) < 0 ) {
+		\Imagify\Stats\OptimizedMediaWithoutWebp::get_instance()->clear_cache();
 	}
 }
 
@@ -332,30 +346,41 @@ function imagify_maybe_reset_opcache( $wp_upgrader, $hook_extra ) {
  * Reset PHP opcache.
  *
  * @since  1.8.1
+ * @since  1.9.9 Added $reset_function_cache parameter and return boolean.
  * @author Grégory Viguier
+ *
+ * @param  bool $reset_function_cache Set to true to bypass the cache.
+ * @return bool                       Return true if the opcode cache was reset (or reset in a previous call), or false if the opcode cache is disabled.
  */
-function imagify_reset_opcache() {
+function imagify_reset_opcache( $reset_function_cache = false ) {
 	static $can_reset;
 
-	if ( ! isset( $can_reset ) ) {
+	if ( $reset_function_cache || ! isset( $can_reset ) ) {
 		if ( ! function_exists( 'opcache_reset' ) ) {
 			$can_reset = false;
-			return;
+			return false;
 		}
 
-		$restrict_api = ini_get( 'opcache.restrict_api' );
+		$opcache_enabled = filter_var( ini_get( 'opcache.enable' ), FILTER_VALIDATE_BOOLEAN ); // phpcs:ignore PHPCompatibility.IniDirectives.NewIniDirectives.opcache_enableFound
+
+		if ( ! $opcache_enabled ) {
+			$can_reset = false;
+			return false;
+		}
+
+		$restrict_api = ini_get( 'opcache.restrict_api' ); // phpcs:ignore PHPCompatibility.IniDirectives.NewIniDirectives.opcache_restrict_apiFound
 
 		if ( $restrict_api && strpos( __FILE__, $restrict_api ) !== 0 ) {
 			$can_reset = false;
-			return;
+			return false;
 		}
 
 		$can_reset = true;
 	}
 
 	if ( ! $can_reset ) {
-		return;
+		return false;
 	}
 
-	opcache_reset();
+	return opcache_reset(); // phpcs:ignore PHPCompatibility.FunctionUse.NewFunctions.opcache_resetFound
 }
