@@ -3,8 +3,8 @@ Contributors: emrevona
 Donate link: http://profiles.wordpress.org/emrevona/
 Tags: cache, caching, performance, wp-cache, total cache, super cache, cdn
 Requires at least: 3.3
-Tested up to: 5.4
-Stable tag: 0.9.0.4
+Tested up to: 6.0
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,10 +39,11 @@ Setup of this plugin is so easy. You don't need to modify the .htacces file. It 
 12. Cloudflare support
 13. Preload Cache - Create the cache of all the site automatically
 14. Exclude pages and user-agents
+15. WP-CLI cache clearing
 
 <h4>Performance Optimization</h4>
 
-In the premium version there are many features such as Minify Html, Minify Css, Enable Gzip Compression, Leverage browser caching, Combine CSS, Combine JS, Disable Emoji.
+In the premium version there are many features such as Minify Html, Minify Css, Enable Gzip Compression, Leverage Browser Caching, Add Expires Headers, Combine CSS, Combine JS, Disable Emoji.
 
 1. Generating static html files from your dynamic WordPress blog
 2. Minify Html - You can decrease the size of page
@@ -124,20 +125,147 @@ The free version is enough to speed up your site but in the premium version ther
 
 == Changelog ==
 
+= 1.0.2 =
+* to add WP-CLI command for clearing cache of a post [<a target="_blank" href="https://www.wpfastestcache.com/features/wp-cli-commands/">Details</a>]
+* to fix Warning scandir() at wpFastestCache.php:302
+* to fix Warning file_put_contents(/cache/wpfc-minified/index.html) at cache.php:1090
+* to fix Warning unlink(wp-cache-config.php) admin.php:885
+
+= 1.0.1 =
+* to clear only cache of post/page even if the "update post" option is disabled
+
+= 1.0.0 =
+* to define the save_settings() function of single preload feature as static function
+
+= 0.9.9 =
+* to clear cache when regular price of woocommorce is updated
+* refactoring of Automatic Cache
+
+= 0.9.8 =
+* to clear cache after updating Elementor Website Builder plugin
+* to clear cache after theme or plugin update by custom settings [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-theme-or-plugin-update/">Details</a>]
+* to enable Auto Cache Panel for the classic editor which is enabled via add_filter()
+
+= 0.9.7 =
+* to clear cache after theme or plugin update by default [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-theme-or-plugin-update/">Details</a>]
+
+= 0.9.6 =
+* refactoring of serving non-exists minified files
+* to fix htaccess rule for Polylang plugin
+* to fix condition of clear cache after plugin update
+
+= 0.9.5 =
+* to prevent generating cache when DONOTCACHEPAGE is defined as true for Divi theme
+* to add nonce security system for cdn saving 
+
+= 0.9.4 =
+* to make compatible the Auto Cache feature with the Disable Gutenberg plugin
+* refactoring of rewrite rule of HTTP_USER_AGENT
+* to check that resources have been successfully optimized
+
+= 0.9.3 =
+* to prevent removing "/" for exclude rules
+* <strong>[FEATURE]</strong> to add "pause" feature for cdn [<a target="_blank" href="https://www.wpfastestcache.com/features/temporarily-disable-cdn/">Details</a>]
+* to add wpfc_clear_all_site_cache() for clearing cache of all sites [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/delete-the-cache-by-calling-the-function/">Details</a>]
+* to add spinner for the buttons on the cdn wizard
+* refactroing of excluding "There has been a critical error on this website" page
+
+= 0.9.2 =
+* <strong>[FEATURE]</strong> to create cache after publishing new post or updating a post [<a target="_blank" href="https://www.wpfastestcache.com/features/automatic-cache/">Details</a>]
+* <strong>[FEATURE]</strong> Clear cache after activate/deactivate plugin [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-activate-deactivate-a-plugin/">Details</a>]
+
+= 0.9.1.9 =
+* <strong>[FEATURE]</strong> Clear cache after switch theme [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-switch-theme/">Details</a>]
+
+= 0.9.1.8 =
+* to make compatible the preload feature with WPML
+* refactoring of clearing cache of content which is moved to trash
+* to fix Notice: Undefined variable: no_selected in single-preload.php on line 39
+* to add image/avif for browser caching
+
+= 0.9.1.7 =
+* to clear cache of the store homepage after WooCommerce order
+* to fix vulnerability (discoverd by Gen Sato)
+* to clear cache after Woocommerce order status changed
+* to add WPFC_DISABLE_CLEARING_CACHE_AFTER_WOOCOMMERCE_ORDER_STATUS_CHANGED [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/woocommerce-settings/#after-order-status-changed">Details</a>]
+
+= 0.9.1.6 =
+* to fix Notice: Undefined variable: order_arr in preload.php on line 161
+* to fix Notice: Undefined property: stdClass::$go in preload.php on line 440
+* to start using the API Token system instead of Global API for Cloudflare [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/wp-fastest-cache-cloudflare/">Details</a>]
+* to fix removing backslashes issue in the pre tag
+* to disable cache for the IP based urls on the bitnami servers
+* to disable cdn if the query string contains wc-api
+
+= 0.9.1.5 =
+* <strong>[FEATURE]</strong> to add Re-Order feture for Preload [<a target="_blank" href="https://www.wpfastestcache.com/features/re-order-preload/">Details</a>]
+
+= 0.9.1.4 =
+* to fix saving "Update Post" settings issue
+* to fix saving "New Post" settings issue
+* <strong>[FEATURE]</strong> Compatible with the AMP Takeover feature of <a target="_blank" href="https://wordpress.org/plugins/accelerated-mobile-pages/">AMP for WP – Accelerated Mobile Pages</a>
+
+= 0.9.1.3 =
+* to fix PHP Notice: Undefined offset: -1 js-utilities.php on line 84
+* to show the details of the error on the Cloudflare cdn integraiton
+
+= 0.9.1.2 =
+* to add webp extension for CDN
+* to replace the attribute which is data-bg-webp with cdn-url
+* to save the Cloudflare zone id instead of getting it via api continuously
+* to prevent calling cloudflare_clear_cache() function multiple times
+
+= 0.9.1.1 =
+* to prevent caching 403 forbidden page which is generated by iThemes Security plugin
+* to convert domain name from IDNA ASCII to Unicode for CDN
+* to minify the imported css sources
+* to round if the preload number is decimal
+
+= 0.9.1.0 =
+* to fix PHP Notice: Undefined property: stdClass::$excludekeywords in wpFastestCache.php on line 1935
+* to fix Undefined offset: 0 in cache.php on line 865
+
+= 0.9.0.9 =
+* <strong>[FEATURE]</strong> to add wizard allows you to show the clear cache button which exists on the admin toolbar based on user roles [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-link-on-the-toolbar/">Details</a>]
+* to fix the replace problem when the cdn-url starts with a number
+* to fix the little issue on the cloudflare integration
+
+= 0.9.0.8 =
+* to exclude PDF files from caching
+* to add Modified Time into htaccess
+* to add "Clear Cache of All Sites" feature for Clear Cache via URL [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-via-url/">Details</a>]
+
+= 0.9.0.7 =
+* <strong>[FEATURE]</strong> to add "exclude sources" feature for CDN
+* to remove the DNS prefetch of s.w.org when emoji is disabled
+* <strong>[FEATURE]</strong> to add wpfc_css_content filter [<a target="_blank" href="https://www.wpfastestcache.com/tutorial/modify-minified-css-by-calling-the-function-hook/">Details</a>]
+* to fix scandir(): (errno 2): No such file or directory on js-utilities.php line 238
+
+= 0.9.0.6 =
+* <strong>[FEATURE]</strong> to add WP-CLI command for clearing minified sources [<a target="_blank" href="https://www.wpfastestcache.com/features/wp-cli-commands/">Details</a>]
+* to fix Warning: parse_url() expects parameter 1 to be string, object given in preload.php on line 458
+* <strong>[FEATURE]</strong> Compatible with <a target="_blank" href="https://wordpress.org/plugins/multiple-domain/">Multiple Domain</a>
+* <strong>[FEATURE]</strong> to add Clear Cache of All Sites button [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-of-all-sites/">Details</a>]
+
+= 0.9.0.5 =
+* to fix replacing urls on the json source with cdn url
+* to fix clearing cache on sites using Polylang plugin
+* to prevent creating cache for feed of nonexistent content
+
 = 0.9.0.4 =
 * to fix PHP Fatal error:  Call to a member function lazy_load() on null in cache.php on line 798
 * to clear sitemap cache after updating or publishing post
 * to clear cache of the static posts page
 * to replace urls on data-siteorigin-parallax attribute with cdn-url
 * to fix the problem abour "Mobile" option
-* [FEATURE] Clear cache after theme or plugin update [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-theme-or-plugin-update/">Details</a>]
+* <strong>[FEATURE]</strong> Clear cache after theme or plugin update [<a target="_blank" href="https://www.wpfastestcache.com/features/clear-cache-after-theme-or-plugin-update/">Details</a>]
 
 = 0.9.0.3 =
-* [FEATURE] Compatible with Multiple Domain Mapping on single site
-* [BETA FEATURE] to create cache after publishing new post or updating a post [<a target="_blank" href="https://www.wpfastestcache.com/features/automatic-cache/">Details</a>]
+* <strong>[FEATURE]</strong> Compatible with Multiple Domain Mapping on single site
+* <strong>[BETA FEATURE]</strong> to create cache after publishing new post or updating a post [<a target="_blank" href="https://www.wpfastestcache.com/features/automatic-cache/">Details</a>]
 * to fix clearing search (/?s=) result cache 
 * to add settings link on the plugin list
-* [FEATURE] Compatible with Polylang with one different subdomain or domain per language
+* <strong>[FEATURE]</strong> Compatible with Polylang with one different subdomain or domain per language
 * to exclude url which ends with slash if the permalink does not end with slush
 * to exclude images for cdn if the url contains brizy_media=
 

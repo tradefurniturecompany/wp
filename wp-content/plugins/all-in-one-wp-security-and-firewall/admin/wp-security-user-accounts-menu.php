@@ -35,13 +35,6 @@ class AIOWPSecurity_User_Accounts_Menu extends AIOWPSecurity_Admin_Menu
         );
     }
 
-    function get_current_tab() 
-    {
-        $tab_keys = array_keys($this->menu_tabs);
-        $tab = isset( $_GET['tab'] ) ? sanitize_text_field($_GET['tab']) : $tab_keys[0];
-        return $tab;
-    }
-
     /*
      * Renders our tabs of this menu as nav items
      */
@@ -72,7 +65,7 @@ class AIOWPSecurity_User_Accounts_Menu extends AIOWPSecurity_Admin_Menu
         <div id="poststuff"><div id="post-body">
         <?php  
         //$tab_keys = array_keys($this->menu_tabs);
-        call_user_func(array(&$this, $this->menu_tabs_handler[$tab]));
+        call_user_func(array($this, $this->menu_tabs_handler[$tab]));
         ?>
         </div></div>
         </div><!-- end of wrap -->
@@ -174,7 +167,7 @@ class AIOWPSecurity_User_Accounts_Menu extends AIOWPSecurity_Admin_Menu
             $login_nick_name_accounts = AIOWPSecurity_Utility::check_identical_login_and_nick_names();
             if ($login_nick_name_accounts) {
                 echo '<div class="aio_red_box"><p>'.__('Your site currently has the following accounts which have an identical login name and display name.', 'all-in-one-wp-security-and-firewall').'
-                         <span class="description">('.__('Click on the link to edit the settings of that particular user account', 'all-in-one-wp-security-and-firewall').'</span></p></div>';
+                         <span class="description">('.__('Follow the link to edit the user profile of that particular user account, change Nickname, choose a different Display name compared to Username, and press the "Update User" button.)', 'all-in-one-wp-security-and-firewall').'</span></p></div>';
             ?>
                 <table class="form-table">
                     <?php 
@@ -335,7 +328,7 @@ class AIOWPSecurity_User_Accounts_Menu extends AIOWPSecurity_Admin_Menu
                     $account_output .= '<td>'.$entry->user_login.'</td>';
                 }
                 $user_acct_edit_link = admin_url('user-edit.php?user_id=' . $entry->ID);
-                $account_output .= '<td><a href="'.$user_acct_edit_link.'" target="_blank">Edit User</a></td>';
+                $account_output .= '<td><a href="'.$user_acct_edit_link.'" target="_blank">'.__('Edit User', 'all-in-one-wp-security-and-firewall').'</a></td>';
                 $account_output .= '</tr>';
             }
             $account_output .= '</table>';

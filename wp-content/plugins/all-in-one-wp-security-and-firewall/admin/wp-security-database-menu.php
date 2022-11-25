@@ -36,13 +36,6 @@ class AIOWPSecurity_Database_Menu extends AIOWPSecurity_Admin_Menu
         }
         
     }
-    
-    function get_current_tab() 
-    {
-        $tab_keys = array_keys($this->menu_tabs);
-        $tab = isset( $_GET['tab'] ) ? sanitize_text_field($_GET['tab']) : $tab_keys[0];
-        return $tab;
-    }
 
     /*
      * Renders our tabs of this menu as nav items
@@ -74,7 +67,7 @@ class AIOWPSecurity_Database_Menu extends AIOWPSecurity_Admin_Menu
         <div id="poststuff"><div id="post-body">
         <?php 
         //$tab_keys = array_keys($this->menu_tabs);
-        call_user_func(array(&$this, $this->menu_tabs_handler[$tab]));
+        call_user_func(array($this, $this->menu_tabs_handler[$tab]));
         ?>
         </div></div>
         </div><!-- end of wrap -->
@@ -452,7 +445,9 @@ class AIOWPSecurity_Database_Menu extends AIOWPSecurity_Admin_Menu
 	foreach ($config_contents as $line_num => $line) {
             $no_ws_line = preg_replace( '/\s+/', '', $line ); //Strip white spaces
             if(strpos($no_ws_line, $prefix_match_string) !== FALSE){
-                $config_contents[$line_num] = str_replace($table_old_prefix, $table_new_prefix, $line);
+                $prefix_parts = explode("=",$config_contents[$line_num]);
+                $prefix_parts[1] = str_replace($table_old_prefix, $table_new_prefix, $prefix_parts[1]);
+                $config_contents[$line_num] = implode("=",$prefix_parts);
                 break;
             }
 	}

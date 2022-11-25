@@ -3,12 +3,24 @@
  * Inits the admin dashboard side of things.
  * Main admin file which loads all settings panels and sets up admin menus. 
  */
-if(!defined('ABSPATH')){
-    exit;//Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;// Exit if accessed directly
 }
 
-class AIOWPSecurity_Admin_Init
-{
+class AIOWPSecurity_Admin_Init {
+
+    /**
+     * Whether the page is admin dashboard page.
+     * @var boolean
+     */
+    private $is_admin_dashboard_page;
+
+    /**
+     * Whether the page is admin AIOWPS page.
+     * @var boolean
+     */
+    private $is_aiowps_admin_page;
+
     var $main_menu_page;
     var $dashboard_menu;
     var $settings_menu;
@@ -25,18 +37,29 @@ class AIOWPSecurity_Admin_Init
     var $filescan_menu;
     var $misc_menu;
 
-    function __construct() {
+    /**
+     * Includes admin dependencies and hook admin actions.
+     *
+     * @return void
+     */
+    public function __construct() {
         //This class is only initialized if is_admin() is true
         $this->admin_includes();
-        add_action('admin_menu', array(&$this, 'create_admin_menus'));
+        add_action('admin_menu', array($this, 'create_admin_menus'));
         //handle CSV download
-        add_action('admin_init', array(&$this, 'aiowps_csv_download'));
+        add_action('admin_init', array($this, 'aiowps_csv_download'));
+
+        add_action('admin_init', array($this, 'hook_admin_notices'));
 
         //make sure we are on our plugin's menu pages
-        if (isset($_GET['page']) && strpos($_GET['page'], AIOWPSEC_MENU_SLUG_PREFIX) !== false) {
-            add_action('admin_print_scripts', array(&$this, 'admin_menu_page_scripts'));
-            add_action('admin_print_styles', array(&$this, 'admin_menu_page_styles'));
-            add_action('init', array(&$this, 'init_hook_handler_for_admin_side'));
+        if ($this->is_aiowps_admin_page()) {
+            add_action('admin_print_scripts', array($this, 'admin_menu_page_scripts'));
+            add_action('admin_print_styles', array($this, 'admin_menu_page_styles'));
+            add_action('init', array($this, 'init_hook_handler_for_admin_side'));
+
+            if (class_exists('AIOWPS_PREMIUM')) {
+                add_filter('admin_footer_text', array($this, 'display_footer_review_message'));
+            }
         }
     }
 
@@ -123,6 +146,73 @@ class AIOWPSecurity_Admin_Init
         }
     }
 
+    /**
+     * Check whether current admin page is All In One WP Security admin page or not.
+     *
+     * @return boolean True if All In One WP Security admin page, Otherwise false.
+     */
+    private function is_aiowps_admin_page() {
+        if (isset($this->is_aiowps_admin_page)) {
+            return $this->is_aiowps_admin_page;
+        }
+        global $pagenow;
+        $this->is_aiowps_admin_page = ('admin.php' == $pagenow && isset($_GET['page']) && false !== strpos($_GET['page'], AIOWPSEC_MENU_SLUG_PREFIX));
+        return $this->is_aiowps_admin_page;
+    }
+
+    /**
+     * Hook admin notices on admin dashboard page and admin AIOWPS pages.
+     *
+     * @return void
+     */
+    public function hook_admin_notices() {
+        if (!current_user_can('update_plugins')) {
+            return;
+        }
+
+        // If none of the admin dashboard page or the AIOWPS page, Then bail
+        if (!$this->is_admin_dashboard_page() && !$this->is_aiowps_admin_page()) {
+            return;
+        }
+
+        add_action('all_admin_notices', array($this, 'render_admin_notices'));
+    }
+
+    /**
+     * Check whether current admin page is Admin Dashboard page or not.
+     *
+     * @return boolean True if Admin Dashboard page, Otherwise false.
+     */
+    private function is_admin_dashboard_page() {
+        if (isset($this->is_admin_dashboard_page)) {
+            return $this->is_admin_dashboard_page;
+        }
+        global $pagenow;
+        $this->is_admin_dashboard_page = 'index.php' == $pagenow;
+        return $this->is_admin_dashboard_page;
+    }
+
+    /**
+     * Render admin notices.
+     *
+     * @return void
+     */
+    public function render_admin_notices() {
+        global $aio_wp_security;
+
+        $installed_at = $aio_wp_security->notices->get_aiowps_plugin_installed_timestamp();
+        $time_now = $aio_wp_security->notices->get_time_now();
+        $installed_for = $time_now - $installed_at;
+
+        $dismissed_dash_notice_until = (int) $aio_wp_security->configs->get_value('dismissdashnotice');
+
+        if ($this->is_admin_dashboard_page() && ($installed_at && $time_now > $dismissed_dash_notice_until && $installed_for > (14 * 86400) && !defined('AIOWPSECURITY_NOADS_B')) || (defined('AIOWPSECURITY_FORCE_DASHNOTICE') && AIOWPSECURITY_FORCE_DASHNOTICE)) {
+            $aio_wp_security->include_template('notices/thanks-for-using-main-dash.php');
+        } elseif ($this->is_aiowps_admin_page() && $installed_at && $installed_for > 14*86400) {
+            $aio_wp_security->notices->do_notice(false, 'top');
+        }
+    }
+
     function admin_includes()
     {
         include_once('wp-security-admin-menu.php');
@@ -154,6 +244,21 @@ class AIOWPSecurity_Admin_Init
         $this->aiowps_media_uploader_modification();
         $this->initialize_feature_manager();
         $this->do_other_admin_side_init_tasks();
+    }
+
+    /**
+     * Show footer review message and link.
+     *
+     * @return string
+     */
+    public function display_footer_review_message() {
+        /* translators: 1: All In One WP Security & Firewall 2: G2 review link */
+        $message = sprintf(
+            __('Enjoyed %1$s? Please leave us a %2$s rating. We really appreciate your support!', 'all-in-one-wp-security-and-firewall'),
+            '<b>All In One WP Security & Firewall</b>',
+            '<a href="https://www.g2.com/products/all-in-one-wp-security-firewall/reviews" target="_blank">&starf;&starf;&starf;&starf;&starf;</a>'
+        );
+        return $message;
     }
 
     function aiowps_media_uploader_modification()
@@ -234,7 +339,7 @@ class AIOWPSecurity_Admin_Init
             {
                 $brute_force_feature_secret_word = sanitize_text_field($_POST['aiowps_brute_force_secret_word']);
                 if(empty($brute_force_feature_secret_word)){
-                    $brute_force_feature_secret_word = "aiowps_secret";
+                    $brute_force_feature_secret_word = "aiowpssecret";
                 }
                 AIOWPSecurity_Utility::set_cookie_value($brute_force_feature_secret_word, "1");
             }
@@ -287,37 +392,37 @@ class AIOWPSecurity_Admin_Init
     function create_admin_menus()
     {
         $menu_icon_url = AIO_WP_SECURITY_URL.'/images/plugin-icon.png';
-        $this->main_menu_page = add_menu_page(__('WP Security', 'all-in-one-wp-security-and-firewall'), __('WP Security', 'all-in-one-wp-security-and-firewall'), AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_MAIN_MENU_SLUG , array(&$this, 'handle_dashboard_menu_rendering'), $menu_icon_url);
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Dashboard', 'all-in-one-wp-security-and-firewall'),  __('Dashboard', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_MAIN_MENU_SLUG, array(&$this, 'handle_dashboard_menu_rendering'));
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Settings', 'all-in-one-wp-security-and-firewall'),  __('Settings', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_SETTINGS_MENU_SLUG, array(&$this, 'handle_settings_menu_rendering'));
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('User Accounts', 'all-in-one-wp-security-and-firewall'),  __('User Accounts', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_USER_ACCOUNTS_MENU_SLUG, array(&$this, 'handle_user_accounts_menu_rendering'));
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('User Login', 'all-in-one-wp-security-and-firewall'),  __('User Login', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_USER_LOGIN_MENU_SLUG, array(&$this, 'handle_user_login_menu_rendering'));
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('User Registration', 'all-in-one-wp-security-and-firewall'),  __('User Registration', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_USER_REGISTRATION_MENU_SLUG, array(&$this, 'handle_user_registration_menu_rendering'));
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Database Security', 'all-in-one-wp-security-and-firewall'),  __('Database Security', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_DB_SEC_MENU_SLUG, array(&$this, 'handle_database_menu_rendering'));
+        $this->main_menu_page = add_menu_page(__('WP Security', 'all-in-one-wp-security-and-firewall'), __('WP Security', 'all-in-one-wp-security-and-firewall'), AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_MAIN_MENU_SLUG , array($this, 'handle_dashboard_menu_rendering'), $menu_icon_url);
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Dashboard', 'all-in-one-wp-security-and-firewall'),  __('Dashboard', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_MAIN_MENU_SLUG, array($this, 'handle_dashboard_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Settings', 'all-in-one-wp-security-and-firewall'),  __('Settings', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_SETTINGS_MENU_SLUG, array($this, 'handle_settings_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('User Accounts', 'all-in-one-wp-security-and-firewall'),  __('User Accounts', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_USER_ACCOUNTS_MENU_SLUG, array($this, 'handle_user_accounts_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('User Login', 'all-in-one-wp-security-and-firewall'),  __('User Login', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_USER_LOGIN_MENU_SLUG, array($this, 'handle_user_login_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('User Registration', 'all-in-one-wp-security-and-firewall'),  __('User Registration', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_USER_REGISTRATION_MENU_SLUG, array($this, 'handle_user_registration_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Database Security', 'all-in-one-wp-security-and-firewall'),  __('Database Security', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_DB_SEC_MENU_SLUG, array($this, 'handle_database_menu_rendering'));
         if (AIOWPSecurity_Utility::is_multisite_install() && get_current_blog_id() != 1){
             //Suppress the Filesystem Security menu if site is a multi site AND not the main site
         }else{
-            add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Filesystem Security', 'all-in-one-wp-security-and-firewall'),  __('Filesystem Security', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_FILESYSTEM_MENU_SLUG, array(&$this, 'handle_filesystem_menu_rendering'));
+            add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Filesystem Security', 'all-in-one-wp-security-and-firewall'),  __('Filesystem Security', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_FILESYSTEM_MENU_SLUG, array($this, 'handle_filesystem_menu_rendering'));
         }
         if (AIOWPSecurity_Utility::is_multisite_install() && get_current_blog_id() != 1){
             //Suppress the Blacklist Manager menu if site is a multi site AND not the main site
         }else{
-            add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Blacklist Manager', 'all-in-one-wp-security-and-firewall'),  __('Blacklist Manager', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_BLACKLIST_MENU_SLUG, array(&$this, 'handle_blacklist_menu_rendering'));
+            add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Blacklist Manager', 'all-in-one-wp-security-and-firewall'),  __('Blacklist Manager', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_BLACKLIST_MENU_SLUG, array($this, 'handle_blacklist_menu_rendering'));
         }
         if (AIOWPSecurity_Utility::is_multisite_install() && get_current_blog_id() != 1){
             //Suppress the firewall menu if site is a multi site AND not the main site
         }else{
-            add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Firewall', 'all-in-one-wp-security-and-firewall'),  __('Firewall', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_FIREWALL_MENU_SLUG, array(&$this, 'handle_firewall_menu_rendering'));
+            add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Firewall', 'all-in-one-wp-security-and-firewall'),  __('Firewall', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_FIREWALL_MENU_SLUG, array($this, 'handle_firewall_menu_rendering'));
         }
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Brute Force', 'all-in-one-wp-security-and-firewall'),  __('Brute Force', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_BRUTE_FORCE_MENU_SLUG, array(&$this, 'handle_brute_force_menu_rendering'));
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('SPAM Prevention', 'all-in-one-wp-security-and-firewall'),  __('SPAM Prevention', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_SPAM_MENU_SLUG, array(&$this, 'handle_spam_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Brute Force', 'all-in-one-wp-security-and-firewall'),  __('Brute Force', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_BRUTE_FORCE_MENU_SLUG, array($this, 'handle_brute_force_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('SPAM Prevention', 'all-in-one-wp-security-and-firewall'),  __('SPAM Prevention', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_SPAM_MENU_SLUG, array($this, 'handle_spam_menu_rendering'));
         if (AIOWPSecurity_Utility::is_multisite_install() && get_current_blog_id() != 1){
             //Suppress the filescan menu if site is a multi site AND not the main site
         }else{
-            add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Scanner', 'all-in-one-wp-security-and-firewall'),  __('Scanner', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_FILESCAN_MENU_SLUG, array(&$this, 'handle_filescan_menu_rendering'));
+            add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Scanner', 'all-in-one-wp-security-and-firewall'),  __('Scanner', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_FILESCAN_MENU_SLUG, array($this, 'handle_filescan_menu_rendering'));
         }
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Maintenance', 'all-in-one-wp-security-and-firewall'),  __('Maintenance', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_MAINTENANCE_MENU_SLUG, array(&$this, 'handle_maintenance_menu_rendering'));
-        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Miscellaneous', 'all-in-one-wp-security-and-firewall'),  __('Miscellaneous', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_MISC_MENU_SLUG, array(&$this, 'handle_misc_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Maintenance', 'all-in-one-wp-security-and-firewall'),  __('Maintenance', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_MAINTENANCE_MENU_SLUG, array($this, 'handle_maintenance_menu_rendering'));
+        add_submenu_page(AIOWPSEC_MAIN_MENU_SLUG, __('Miscellaneous', 'all-in-one-wp-security-and-firewall'),  __('Miscellaneous', 'all-in-one-wp-security-and-firewall') , AIOWPSEC_MANAGEMENT_PERMISSION, AIOWPSEC_MISC_MENU_SLUG, array($this, 'handle_misc_menu_rendering'));
         do_action('aiowpsecurity_admin_menu_created');
     }
         

@@ -17,7 +17,7 @@ class AIOWPSecurity_Filesystem_Menu extends AIOWPSecurity_Admin_Menu
     function __construct() 
     {
         $this->render_menu_page();
-        add_action( 'admin_footer', array( &$this, 'filesystem_menu_footer_code' ) );
+        add_action( 'admin_footer', array($this, 'filesystem_menu_footer_code' ) );
     }
     
     function set_menu_tabs() 
@@ -28,13 +28,6 @@ class AIOWPSecurity_Filesystem_Menu extends AIOWPSecurity_Admin_Menu
         'tab3' => __('WP File Access','all-in-one-wp-security-and-firewall'),
         'tab4' => __('Host System Logs','all-in-one-wp-security-and-firewall'),
         );
-    }
-
-    function get_current_tab() 
-    {
-        $tab_keys = array_keys($this->menu_tabs);
-        $tab = isset( $_GET['tab'] ) ? sanitize_text_field($_GET['tab']) : $tab_keys[0];
-        return $tab;
     }
 
     /*
@@ -67,7 +60,7 @@ class AIOWPSecurity_Filesystem_Menu extends AIOWPSecurity_Admin_Menu
         <div id="poststuff"><div id="post-body">
         <?php 
         //$tab_keys = array_keys($this->menu_tabs);
-        call_user_func(array(&$this, $this->menu_tabs_handler[$tab]));
+        call_user_func(array($this, $this->menu_tabs_handler[$tab]));
         ?>
         </div></div>
         </div><!-- end of wrap -->
