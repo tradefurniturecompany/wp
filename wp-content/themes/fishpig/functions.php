@@ -9,7 +9,7 @@
 // phpcs:ignoreFile -- this file is a WordPress theme file and will not run in Magento
 
 define('FISHPIG_THEME_OPTION_NAME', 'fishpig-theme-hash');
-define('FISHPIG_THEME_HASH', '8ddf0f97f6d25c24b8dcb139d6a5d5de');
+define('FISHPIG_THEME_HASH', '43dd46f3b48b64de067b0a1ff4c12c81');
 define('FISHPIG_CLASS_PREFIX', 'FishPig\WordPress\X\\');
 
 // Turn of deprecated errors
